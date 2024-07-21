@@ -1,8 +1,8 @@
 import { useState } from "react"
 import Button from "../components/Button"
 import Layout from "../components/Layout"
-
 import axios from 'axios'
+import { useEffect } from "react"
 
 const Contact = () => {
     const [formData, setFormData] = useState({
@@ -10,15 +10,14 @@ const Contact = () => {
         email: "",
         message: ""
     })
+    const [isFormValid, setIsFormValid] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         setFormData({
             ...formData,
             [name]: value
-        })
-
+        });
     }
 
     const clearForm = () => {
@@ -26,29 +25,28 @@ const Contact = () => {
             name: "",
             email: "",
             message: ""
-
-        })
+        });
     }
-    const handleSubmit = (e) => {
+    
+    // Check if the form is valid
+    useEffect(() => {
+        const { name, email, message } = formData;
+        // Simple validation: all fields must be non-empty
+        setIsFormValid(name.trim() !== '' && email.trim() !== '' && message.trim() !== '');
+    }, [formData]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData)
-
         try {
-            const response = axios.post('http://localhost:3000/api/user', formData)
-
-            console.log(response)
-
-            if (response.ok) {
-                const responseData = response.json();
-                clearForm()
-                console.log(responseData)
-            } else {
-                console.log('error inside response')
-            }
-        } catch (err) {
-            console.error('error', err.message)
+            const response = await axios.post('http://localhost:3000/api/messages', formData);
+            console.log(response.data);
+            clearForm();
+            // Handle success (e.g., display a success message, reset the form, etc.)
+        } catch (error) {
+            console.error('Error sending message:', error);
+            // Handle error (e.g., display an error message)
         }
-    }
+    };
 
     return (
         <div>
@@ -95,7 +93,7 @@ const Contact = () => {
                             text={'Submit'}
                             className=" w-[6.2rem] hover:border-dark"
                             type="submit"
-
+                            disabled={!isFormValid}
                         />
                     </fieldset>
                 </form>
@@ -104,4 +102,4 @@ const Contact = () => {
     )
 }
 
-export default Contact
+export default Contact;
